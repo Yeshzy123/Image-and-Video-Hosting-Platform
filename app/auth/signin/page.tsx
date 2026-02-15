@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Sparkles, Chrome } from 'lucide-react'
@@ -10,19 +11,31 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate sign in - in production this would connect to your backend
-    setTimeout(() => {
-      alert('Sign in functionality requires server setup. This is a demo version.')
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        alert('Invalid credentials. Please try again.')
+      } else {
+        window.location.href = '/dashboard'
+      }
+    } catch (error) {
+      alert('Sign in failed. Please try again.')
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const handleGoogleSignIn = () => {
-    alert('Google sign in requires server setup with Google OAuth credentials.')
+    signIn('google', { callbackUrl: '/dashboard' })
   }
 
   return (
@@ -112,13 +125,6 @@ export default function SignInPage() {
               <Link href="/auth/signup" className="text-nature-600 hover:text-nature-700 font-medium">
                 Sign up
               </Link>
-            </p>
-          </div>
-
-          {/* Demo Notice */}
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-700">
-              <strong>Demo Mode:</strong> Full authentication requires server setup with database and environment variables.
             </p>
           </div>
         </div>
