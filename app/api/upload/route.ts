@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { saveImage, optimizeImage } from '@/lib/storage'
 import { generateDeleteToken, getMaxFileSize } from '@/lib/utils'
+import { webhook } from '@/lib/webhook'
 
 export async function POST(req: Request) {
   try {
@@ -111,6 +112,9 @@ export async function POST(req: Request) {
         storageUsed: BigInt(newStorageUsed),
       },
     })
+
+    // Send Discord webhook notification
+    await webhook.newUpload(user.id, file.name, `${(file.size / 1024 / 1024).toFixed(2)} MB`, file.type)
 
     return NextResponse.json({
       id: image.id,

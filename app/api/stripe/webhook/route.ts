@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { webhook } from '@/lib/webhook'
 import Stripe from 'stripe'
 
 export async function POST(req: Request) {
@@ -58,14 +59,19 @@ export async function POST(req: Request) {
           },
         })
 
-        const premiumLimit = parseInt(process.env.PREMIUM_STORAGE_LIMIT_MB || '25600') * 1024 * 1024
-
+        // Update user storage limit
         await prisma.user.update({
           where: { id: userId },
-          data: {
-            storageLimit: BigInt(premiumLimit),
-          },
+          data: { storageLimit: BigInt(25600 * 1024 * 1024) }, // 25GB
         })
+
+        // Send Discord webhook notification
+        await webhook.payment(
+          userId,
+          `$${(session.amount_total || 0) / 100}`,
+          'PREMIUM',
+          'succeeded'
+        )
 
         break
       }

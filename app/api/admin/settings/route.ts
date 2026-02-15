@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { webhook } from '@/lib/webhook'
 
 export async function GET(req: Request) {
   try {
@@ -104,6 +105,26 @@ export async function PATCH(req: Request) {
         maintenanceMessage: data.maintenanceMessage,
       },
     })
+
+    // Send Discord webhook notification for important setting changes
+    const changes = []
+    if (data.maintenanceMode !== undefined) {
+      changes.push(`Maintenance Mode: ${data.maintenanceMode ? 'ENABLED' : 'DISABLED'}`)
+    }
+    if (data.enableGoogleAuth !== undefined) {
+      changes.push(`Google Auth: ${data.enableGoogleAuth ? 'ENABLED' : 'DISABLED'}`)
+    }
+    if (data.enableNsfwDetection !== undefined) {
+      changes.push(`NSFW Detection: ${data.enableNsfwDetection ? 'ENABLED' : 'DISABLED'}`)
+    }
+
+    if (changes.length > 0) {
+      await webhook.adminAction(
+        session.user.id,
+        'Settings Updated',
+        changes.join(', ')
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

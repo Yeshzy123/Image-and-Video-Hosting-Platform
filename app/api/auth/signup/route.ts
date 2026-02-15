@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { webhook } from '@/lib/webhook'
 
 const signupSchema = z.object({
   name: z.string().min(2),
@@ -43,6 +44,9 @@ export async function POST(req: Request) {
         plan: 'FREE',
       },
     })
+
+    // Send Discord webhook notification
+    await webhook.newUser(user.email, user.name, user.id)
 
     return NextResponse.json(
       { message: 'User created successfully', userId: user.id },
