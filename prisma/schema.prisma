@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  bio           String?
+  role          String    @default("USER")
+  
+  storageUsed   BigInt    @default(0)
+  storageLimit  BigInt    @default(524288000)
+  
+  subscription  Subscription?
+  images        Image[]
+  accounts      Account[]
+  sessions      Session[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+  isBanned      Boolean   @default(false)
+  
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  stripeCustomerId      String?       @unique
+  stripeSubscriptionId  String?       @unique
+  stripePriceId         String?
+  stripeCurrentPeriodEnd DateTime?
+  
+  status            String            @default("INACTIVE")
+  plan              String            @default("FREE")
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  canceledAt        DateTime?
+  
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+model Image {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  filename      String
+  originalName  String
+  mimeType      String
+  size          BigInt
+  width         Int?
+  height        Int?
+  duration      Float?      // For videos in seconds
+  
+  url           String
+  thumbnailUrl  String?     // For videos
+  
+  isPublic      Boolean     @default(true)
+  isFlagged     Boolean     @default(false)
+  flagReason    String?
+  views         Int         @default(0)
+  likes         Int         @default(0)
+  
+  deleteToken   String      @unique @default(cuid())
+  
+  isFavorite    Boolean     @default(false)
+  expiresAt     DateTime?
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@index([userId])
+  @@index([isPublic])
+  @@index([isFlagged])
+  @@index([createdAt])
+}
+
+model SiteSettings {
+  id                    String   @id @default(cuid())
+  
+  maintenanceMode       Boolean  @default(false)
+  maintenanceMessage    String?
+  
+  theme                 String   @default("nature")
+  primaryColor          String   @default("#22c55e")
+  enableAnimations      Boolean  @default(true)
+  
+  maxUploadSizeFree     Int      @default(5)
+  maxUploadSizePremium  Int      @default(100)
+  
+  subscriptionPrice     Float    @default(3.25)
+  freeStorageLimit      BigInt   @default(524288000)
+  premiumStorageLimit   BigInt   @default(26843545600)
+  
+  homepageTitle         String   @default("Modern Image Hosting")
+  homepageSubtitle      String   @default("Fast, secure, and beautiful image hosting")
+  
+  enableGoogleAuth      Boolean  @default(false)
+  enableNsfwDetection   Boolean  @default(false)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Analytics {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  
+  totalUsers    Int      @default(0)
+  newUsers      Int      @default(0)
+  totalImages   Int      @default(0)
+  newImages     Int      @default(0)
+  totalStorage  BigInt   @default(0)
+  totalViews    Int      @default(0)
+  
+  activeSubscriptions Int @default(0)
+  revenue       Float    @default(0)
+  
+  @@index([date])
+}
