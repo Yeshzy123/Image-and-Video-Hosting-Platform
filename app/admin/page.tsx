@@ -130,7 +130,7 @@ function AdminDashboard() {
       })
 
       if (response.ok) {
-        setSettings((prev) => ({ ...prev, [key]: value }))
+        setSettings((prev: any) => ({ ...prev, [key]: value }))
         toast.success('Setting updated successfully')
       }
     } catch (error) {

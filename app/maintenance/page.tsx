@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Tools, Clock, Mail } from 'lucide-react'
+import { Wrench, Clock, Mail } from 'lucide-react'
 
 export default function MaintenancePage() {
   const [settings, setSettings] = useState<any>(null)
@@ -36,7 +36,7 @@ export default function MaintenancePage() {
         <div className="glass p-8 rounded-2xl">
           {/* Icon */}
           <div className="w-16 h-16 bg-nature-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Tools className="w-8 h-8 text-nature-600" />
+            <Wrench className="w-12 h-12 text-nature-600 mb-4" />
           </div>
 
           {/* Title */}

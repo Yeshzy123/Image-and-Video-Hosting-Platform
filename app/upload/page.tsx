@@ -14,6 +14,8 @@ interface UploadedImage {
   url: string
   thumbnailUrl: string
   deleteToken: string
+  originalName: string
+  mimeType: string
 }
 
 export default function UploadPage() {

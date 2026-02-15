@@ -10,7 +10,7 @@ import Link from 'next/link'
 export default function ImageViewerPage() {
   const params = useParams()
   const router = useRouter()
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showSignupPrompt, setShowSignupPrompt] = useState(false)
 

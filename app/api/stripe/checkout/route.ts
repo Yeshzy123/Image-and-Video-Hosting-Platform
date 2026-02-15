@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const stripeSession = await createCheckoutSession(
       user.id,
       user.email,
-      user.subscription?.stripeCustomerId
+      user.subscription?.stripeCustomerId || undefined
     )
 
     return NextResponse.json({ url: stripeSession.url })

@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     })
 
     // Send Discord webhook notification
-    await webhook.newUser(user.email, user.name, user.id)
+    await webhook.newUser(user.email, user.name || '', user.id)
 
     return NextResponse.json(
       { message: 'User created successfully', userId: user.id },

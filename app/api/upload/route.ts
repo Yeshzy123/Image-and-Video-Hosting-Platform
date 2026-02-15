@@ -125,7 +125,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Upload error:', error)
     return NextResponse.json(
-      { error: 'Upload failed: ' + error.message },
+      { error: 'Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     )
   }
